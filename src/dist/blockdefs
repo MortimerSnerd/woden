@@ -1,0 +1,8 @@
+BLK "numbers.png" solid,opaque,split4
+BLK "wally.png" solid,opaque,
+BLK "dev/door1vc.png" alpha,solid
+BLK "dev/door1vo.png" alpha
+BLK "dev/floor1.png"
+BLK "dev/wall1.png" solid
+BLK "dev/pc.png" alpha
+BLK "dev/lantern.png" alpha
