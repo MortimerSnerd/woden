@@ -17,6 +17,8 @@ let kb_quit = "quit"
 let kb_increase_scale = "increase scale"
 let kb_decrease_scale = "decrease scale"
 let kb_debugger = "start debugger"
+let kb_open = "open"
+let kb_close = "close"
 
 // Editor
 let kb_pick_block = "pick block"

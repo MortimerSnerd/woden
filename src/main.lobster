@@ -28,6 +28,7 @@ class test_mode: game_mode
     def update(d_t: float) -> input_result:
         guard player:
             return ir_ok
+        bindings_begin_frame()
         PERF.start("main update")
         var turn_taken = false
         let wsz = gl_window_size()
@@ -61,29 +62,31 @@ class test_mode: game_mode
         when_binding(key_went_down, kb_increase_scale):
             scale += 1
             turn_taken = true
-        when_binding(key_went_down, kb_decrease_scale):
-            scale = max(1, scale-1)
-            turn_taken = true
+        if scale > 1:
+            when_binding(key_went_down, kb_decrease_scale):
+                scale = max(1, scale-1)
+                turn_taken = true
 
         if gl_button("space") == 1:
             lev.floor.set_toc_index(top_left+int2_1*4, 0)
 
         // debuggery
-        if gl_button("o") == 1:
-            for_objects_in_reach_of(player) o:
-                var act = ""
-                if o.supports_interaction(player, "open"):
+        for_objects_in_reach_of(player) o:
+            var act = ""
+            if o.supports_interaction(player, "open"):
+                when_binding(key_went_down, kb_open):
                     act = "open"
-                elif o.supports_interaction(player, "close"):
+            elif o.supports_interaction(player, "close"):
+                when_binding(key_went_down, kb_close):
                     act = "close"
-                guard act != ""
+
+            if act != "":
                 let suc, _dur, err = o.interact(player, act)
                 if not suc:
                     print("{act}: {err}")
                 turn_taken = true
                 return from for_objects_in_reach_of
 
-            
 
         when_binding(key_went_down, kb_quit):
             return ir_finished
@@ -93,6 +96,24 @@ class test_mode: game_mode
 
         PERF.stop()
         return ir_ok
+
+
+    def write_control_help():
+        gl_ortho()
+        gl_color(color_white)
+        gl_set_shader("color")
+        gl_blend(blend_alpha)
+        gl_set_font_name("data/fonts/Droid_Sans/DroidSans.ttf")
+        gl_set_font_size(16)
+        let cdim = float(gl_text_size("W"))
+        let vspace = 4.0
+        var y = float(gl_window_size().y) - cdim.y - vspace
+
+        for_tested_bindings() act, _test, desc:
+            gl_translate(float2{cdim.x*2.0, y}):
+                gl_text("{desc.to_string()} - {act}")
+                y -= vspace + cdim.y
+
 
     def render():
         guard player
@@ -106,13 +127,15 @@ class test_mode: game_mode
         gl_set_shader("textured_color")
         gl_translate(-float(top_left*lev.floor.pxsize)):
             lev.render(view)
+
+        write_control_help()
         PERF.stop()
 
     def on_activate(reactivation: bool):
         if reactivation:
             pass()
         else:
-            let keys = binding_set{}
+            let keys = binding_set{allow_duplicates: true}
             keys.bind(kb_left, key_desc{0, "a"})
             keys.bind(kb_right, key_desc{0, "d"})
             keys.bind(kb_up, key_desc{0, "w"})
@@ -122,6 +145,9 @@ class test_mode: game_mode
             keys.bind(kb_increase_scale, key_desc{0, "="})
             keys.bind(kb_decrease_scale, key_desc{0, "-"})
             keys.bind(kb_debugger, key_desc{mod_control, "b"})
+            keys.bind(kb_open, key_desc{0, "o"})
+            keys.bind(kb_close, key_desc{0, "o"})
+            
             push_bindings(keys)
 
             let rerr, ll = load_grid_level("dist/backup.lv")

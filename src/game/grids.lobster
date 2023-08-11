@@ -616,7 +616,6 @@ class grid_level:
         if length(objects) > 1:
             qsort_in_place(objects) a, b: 
                 a.cc.x < b.cc.x or (a.cc.x == b.cc.x and a.cc.y < b.cc.y)
-            print("ARF {map(objects): _.cc}")
         objects_dirty = false
 
     // Finds the where the given point would be in the objects array.

@@ -88,6 +88,10 @@ class binding_set:
 
    prev: binding_set? = nil
 
+   // If true, allows different actions to bind to the same key.
+   // Helpful for context sensitive binding checks.
+   allow_duplicates = false
+
    // Previous set of bindings 
    // Bindings from action name to a key description.
    key_bindings = [] :: kvpair<string, key_desc>
@@ -98,7 +102,7 @@ class binding_set:
    def bind(action: string, key: key_desc) -> string:
       let prev_bind = find(key_bindings) p: p.value.same_as(key)
       var rv = ""
-      if prev_bind >= 0:
+      if not allow_duplicates and prev_bind >= 0:
          rv = key_bindings[prev_bind].key
          remove(key_bindings, prev_bind)
       push(key_bindings, kvpair<string, key_desc>{action, key})
