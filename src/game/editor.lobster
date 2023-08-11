@@ -198,6 +198,7 @@ class editor_mode: game_mode
         let m1 = gl_button("mouse1")
         let m3 = gl_button("mouse3")
 
+        bindings_begin_frame()
         if m1 == 1:
             if selecting_block:
                 maybe_pick_block()
@@ -393,3 +394,4 @@ class editor_mode: game_mode
     
             
             render_ui_window()
+        write_control_help()

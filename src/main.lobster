@@ -98,22 +98,6 @@ class test_mode: game_mode
         return ir_ok
 
 
-    def write_control_help():
-        gl_ortho()
-        gl_color(color_white)
-        gl_set_shader("color")
-        gl_blend(blend_alpha)
-        gl_set_font_name("data/fonts/Droid_Sans/DroidSans.ttf")
-        gl_set_font_size(16)
-        let cdim = float(gl_text_size("W"))
-        let vspace = 4.0
-        var y = float(gl_window_size().y) - cdim.y - vspace
-
-        for_tested_bindings() act, _test, desc:
-            gl_translate(float2{cdim.x*2.0, y}):
-                gl_text("{desc.to_string()} - {act}")
-                y -= vspace + cdim.y
-
 
     def render():
         guard player

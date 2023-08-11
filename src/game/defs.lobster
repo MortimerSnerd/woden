@@ -1,5 +1,6 @@
 // Some top level constants and utility functions.
 import core.aabb
+import core.bindings
 import core.perf
 import data.binary
 
@@ -81,3 +82,23 @@ def deserialize_bb2i(D: binary_editor) -> aabb2i:
     let mins = D.read_vertex2i()
     let maxs = D.read_vertex2i()
     return aabb2i{mins, maxs}
+
+
+// Helper function for drawing simple binding help using core.bindings features.
+def write_control_help():
+    gl_ortho()
+    gl_color(color_white)
+    gl_set_shader("color")
+    gl_blend(blend_alpha)
+    gl_set_font_name("data/fonts/Droid_Sans/DroidSans.ttf")
+    gl_set_font_size(16)
+    let cdim = float(gl_text_size("W"))
+    let vspace = 4.0
+    var y = float(gl_window_size().y) - cdim.y - vspace
+
+    for_tested_bindings() act, _test, desc:
+        gl_translate(float2{cdim.x*2.0, y}):
+            gl_text("{desc.to_string()} - {act}")
+            y -= vspace + cdim.y
+
+
