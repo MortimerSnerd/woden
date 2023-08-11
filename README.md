@@ -14,4 +14,10 @@ and modified over several projects. For now there are here, but they should real
 go into another repository where can subproject reference them.
 
 
+_Running_
+
+If you have already have [Lobster](https://github.com/aardappel/lobster), 
+just cd to the source directory and run "lobster main.lobster".
+
+
 
