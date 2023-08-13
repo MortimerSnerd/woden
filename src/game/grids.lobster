@@ -432,6 +432,7 @@ class grid_level:
         else:
             return "level: bad end tag @ {D.offset}"
 
+
     // Returns the cell coordinate bb for all of the wall cells at the given
     // floor cell coordinate.
     def wall_area(fc: int2) -> aabb2i:
@@ -641,6 +642,41 @@ class grid_level:
             if bb.contains(objects[i].cc):
                 body(objects[i])
             i++
+
+    def can_move_by(who: object_instance, dir: int2) -> bool:
+        //TODO maybe return a reason too, like "wall", "mob", etc for false case.
+        //     that may simplify move to open case for doors
+        guard (find(all_dirs): _ == dir) >= 0:
+            return false
+        
+        let dest = who.cc+dir
+        for_objects_at(dest) obj: 
+            if obj.blocks_move():
+                return false
+        return not blocking_wall_at(dest)
+
+    // Moves the object, updating any level state as needed. 
+    // Returns false if the move can't be made.
+    def move_by(who: object_instance, dir: int2) -> bool:
+        guard can_move_by(who, dir):
+            return false
+        who.cc += dir
+        //TODO this may cause some thrashing with interleaved moves and object queries
+        objects_dirty = true
+        return true
+
+    //TODO any blocking wall in the floor area blocks for now.  Want looser
+    //     rules later - either some patterns are passable, or a floor cell
+    //     can be marked passable regardless of wall blocks.
+    def blocking_wall_at(cc: int2) -> bool:
+        let wbb = floor_coord_to_wall_area(cc)
+        for_allxy(wbb) p:
+            let ti = wall.toc_ix_at(p)
+            guard ti > 0
+            let blk = wall.toc.block_index(ti)
+            if blk_flags[blk].has(bf_solid):
+                return true
+        return false
 
     private def wc_blocks_light(wc: int2) -> bool:
         //TODO repeated object lookups so slow

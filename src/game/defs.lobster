@@ -20,6 +20,16 @@ let kb_decrease_scale = "decrease scale"
 let kb_debugger = "start debugger"
 let kb_open = "open"
 let kb_close = "close"
+//TODO use these for movement, not up, down, left,right
+let kb_north = "move north"
+let kb_south = "move south"
+let kb_east = "move east"
+let kb_west = "move west"
+let kb_northeast = "move northeast"
+let kb_southeast = "move southeast"
+let kb_southwest = "move southwest"
+let kb_northwest = "move northwest"
+
 
 // Editor
 let kb_pick_block = "pick block"

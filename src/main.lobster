@@ -6,6 +6,8 @@ import core.logging
 import core.perf
 
 import data.binary
+import game.actions
+import game.actions.query
 import game.allobjects
 import game.blocks
 import game.defs
@@ -44,18 +46,6 @@ class test_mode: game_mode
 
         when_binding(key_went_down, kb_debugger):
             breakpoint()
-        when_binding(key_went_down, kb_right):
-            player.cc += int2_x
-            turn_taken = true
-        when_binding(key_went_down, kb_left):
-            player.cc -= int2_x
-            turn_taken = true
-        when_binding(key_went_down, kb_up):
-            player.cc -= int2_y
-            turn_taken = true
-        when_binding(key_went_down, kb_down):
-            player.cc += int2_y
-            turn_taken = true
         when_binding(key_went_down, kb_editor):
             activate_mode(editor_mode{lev, top_left})
 
@@ -69,6 +59,13 @@ class test_mode: game_mode
 
         if gl_button("space") == 1:
             lev.floor.set_toc_index(top_left+int2_1*4, 0)
+
+        // Check inputs based on calculated possible actions.
+        for_possible_actions(player) desc, st:
+            guard st.kb_action != ""
+            when_binding(key_went_down, st.kb_action):
+                desc.execute(st)
+                turn_taken = true
 
         // debuggery
         for_objects_in_reach_of(player) o:
@@ -120,10 +117,6 @@ class test_mode: game_mode
             pass()
         else:
             let keys = binding_set{allow_duplicates: true}
-            keys.bind(kb_left, key_desc{0, "a"})
-            keys.bind(kb_right, key_desc{0, "d"})
-            keys.bind(kb_up, key_desc{0, "w"})
-            keys.bind(kb_down, key_desc{0, "s"})
             keys.bind(kb_quit, key_desc{mod_control, "x"})
             keys.bind(kb_editor, key_desc{0, "f1"})
             keys.bind(kb_increase_scale, key_desc{0, "="})
@@ -131,7 +124,15 @@ class test_mode: game_mode
             keys.bind(kb_debugger, key_desc{mod_control, "b"})
             keys.bind(kb_open, key_desc{0, "o"})
             keys.bind(kb_close, key_desc{0, "o"})
-            
+            // For debugging, using rogue vikeys for movement
+            keys.bind(kb_north, key_desc{0, "k"}) 
+            keys.bind(kb_south, key_desc{0, "j"}) 
+            keys.bind(kb_east, key_desc{0, "l"}) 
+            keys.bind(kb_west, key_desc{0, "h"}) 
+            keys.bind(kb_northeast, key_desc{0, "u"}) 
+            keys.bind(kb_southeast, key_desc{0, "n"}) 
+            keys.bind(kb_southwest, key_desc{0, "b"}) 
+            keys.bind(kb_northwest, key_desc{0, "y"}) 
             push_bindings(keys)
 
             let rerr, ll = load_grid_level("dist/backup.lv")

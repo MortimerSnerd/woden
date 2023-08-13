@@ -1,0 +1,5 @@
+*.bak
+atlas*.tga
+*.bin
+src/tags
+src/imgui.ini
