@@ -209,6 +209,10 @@ class object_instance:
     def type_name() -> string:
         return object_types[typei].name
 
+    // Name that can be presented to a user.
+    def p_name() -> string:
+        return type_name()
+
     // Calls body(flgvalue: bool) if any mixin overrides
     // the given flag.  First mixin that overrides wins.
     private def with_mixin_overridden_flag(flg: int, body):

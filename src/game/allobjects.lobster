@@ -4,6 +4,7 @@
 import game.obj.door
 import game.obj.light
 import game.actions.move
+import game.actions.interactions
 
 private def do_nothing():
     pass()

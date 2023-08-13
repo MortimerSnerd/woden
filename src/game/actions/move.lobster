@@ -33,7 +33,9 @@ class move_action: location_action
 
     def execute(st: action_state):
         guard current_level
-        assert current_level.move_by(st.who, st.where - st.who.cc) 
+        if not current_level.move_by(st.who, st.where - st.who.cc):
+            st.rc = rc_movement_blocked
+            st.msg = "something is in the way"
         
 register_action(move_action{name: "move", short_desc: "move one step", 
                             kb_action: ""})

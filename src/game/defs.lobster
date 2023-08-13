@@ -20,6 +20,9 @@ let kb_decrease_scale = "decrease scale"
 let kb_debugger = "start debugger"
 let kb_open = "open"
 let kb_close = "close"
+let kb_turn_on = "turn on"
+let kb_turn_off = "turn off"
+
 //TODO use these for movement, not up, down, left,right
 let kb_north = "move north"
 let kb_south = "move south"
@@ -49,6 +52,10 @@ let obj_render_layer = 0.5
 let wall_render_layer = 1.0
 let dyn_obj_render_layer = 1.5
 let seen_mask_layer = 2.0
+
+// Standard interaction names
+let ia_turn_on = "turn on"
+let ia_turn_off = "turn off"
 
 // pixel size of floor tiles
 let floor_pxsize = 32

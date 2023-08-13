@@ -66,24 +66,7 @@ class test_mode: game_mode
             when_binding(key_went_down, st.kb_action):
                 desc.execute(st)
                 turn_taken = true
-
-        // debuggery
-        for_objects_in_reach_of(player) o:
-            var act = ""
-            if o.supports_interaction(player, "open"):
-                when_binding(key_went_down, kb_open):
-                    act = "open"
-            elif o.supports_interaction(player, "close"):
-                when_binding(key_went_down, kb_close):
-                    act = "close"
-
-            if act != "":
-                let suc, _dur, err = o.interact(player, act)
-                if not suc:
-                    print("{act}: {err}")
-                turn_taken = true
-                return from for_objects_in_reach_of
-
+                return from for_possible_actions
 
         when_binding(key_went_down, kb_quit):
             return ir_finished
@@ -93,8 +76,6 @@ class test_mode: game_mode
 
         PERF.stop()
         return ir_ok
-
-
 
     def render():
         guard player
@@ -133,6 +114,8 @@ class test_mode: game_mode
             keys.bind(kb_southeast, key_desc{0, "n"}) 
             keys.bind(kb_southwest, key_desc{0, "b"}) 
             keys.bind(kb_northwest, key_desc{0, "y"}) 
+            keys.bind(kb_turn_on, key_desc{0, "a"})
+            keys.bind(kb_turn_off, key_desc{0, "a"})
             push_bindings(keys)
 
             let rerr, ll = load_grid_level("dist/backup.lv")

@@ -6,12 +6,12 @@
 import game.defs
 import game.objects
 
-
 enum act_result_codes:
     rc_ok, 
     rc_out_of_range,
     rc_does_nothing,
     rc_movement_blocked,
+    rc_interaction_failed,
     rc_invalid
 
 // Result class for actions tests and executions, that allow the action_desc
@@ -38,7 +38,7 @@ class action_state:
 // It's important for execute to directly follow the validate call before
 // any global game state gets changed that could invalidate the action.
 // Don't validate and then sit on it before doing anything with it.
-class action_desc:
+abstract class action_desc:
     name: string
     short_desc: string
     kb_action: string
@@ -63,6 +63,9 @@ class self_action: action_desc
 
 // Action on a target object.
 class target_action: action_desc
+    // If true, only neighbors are considered valid locations
+    only_neighbors = true
+
     def validate(who: object_instance, target: object_instance, res: action_state) -> bool:
         fatal("action_desc: other case not implemented")
         return false

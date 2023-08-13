@@ -16,22 +16,22 @@ class light_mixin: object_mixin
     def supports_interaction(parent: object_instance, who: object_instance, 
                              what: string) -> bool:
         if is_on:
-            return what == "stop"
-        return what == "start"
+            return what == ia_turn_off
+        return what == ia_turn_on
 
     def collect_supported_interactions(parent: object_instance, who: object_instance, 
                                        acts: [string]):
         if is_on:
-            push(acts, "stop")
+            push(acts, ia_turn_off)
         else:
-            push(acts, "start")
+            push(acts, ia_turn_on)
 
     def interact(parent: object_instance, who: object_instance, what: string) -> bool, float, string:
         guard supports_interaction(parent, who, what):
             return false, 0.0, "no can do"
-        if what == "start":
+        if what == ia_turn_on:
             is_on = true
-        elif what == "stop":
+        elif what == ia_turn_off:
             is_on = false
         return true, 0.0, ""
 
