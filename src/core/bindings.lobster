@@ -135,6 +135,9 @@ def pop_bindings() -> binding_set?:
    else:
       return nil
 
+def current_bindings() -> binding_set?:
+    return bindings
+
 // List of all actions and the type of key tests made for this frame.
 private var frame_tests = [] :: kvpair<string, key_tests>
 

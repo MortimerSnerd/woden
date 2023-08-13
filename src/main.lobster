@@ -27,10 +27,27 @@ class test_mode: game_mode
     first_frame = false
     last_winsize = int2_0
 
+    // We maintain our own list of checked keys instead of using the core.bindings
+    // one because context sensitive bump actions are more complicated than static
+    // action -> does_something mappings.
+    valid_keys = [] :: kvpair<string, string>   // kb_action, action desc
+
+    private def key_checked(action: string, desc: string = ""):
+        push(valid_keys, kvpair<string,string>{action, if desc == "": action else: desc})
+
+    private def on_key(test: key_tests, action: string, body):
+        key_checked(action)
+        when_binding(test, action, body)
+
+    private def on_bump_key(test: key_tests, action: string, desc: string, body):
+        key_checked(action, desc)
+        when_binding(test, action, body)
+
     def update(d_t: float) -> input_result:
         guard player:
             return ir_ok
         bindings_begin_frame()
+        valid_keys = []
         PERF.start("main update")
         var turn_taken = false
         let wsz = gl_window_size()
@@ -44,21 +61,24 @@ class test_mode: game_mode
             turn_taken = true
             first_frame = false
 
-        when_binding(key_went_down, kb_debugger):
+        on_key(key_went_down, kb_debugger):
             breakpoint()
-        when_binding(key_went_down, kb_editor):
+
+        on_key(key_went_down, kb_editor):
             activate_mode(editor_mode{lev, top_left})
 
-        when_binding(key_went_down, kb_increase_scale):
+        on_key(key_went_down, kb_increase_scale):
             scale += 1
             turn_taken = true
+
         if scale > 1:
-            when_binding(key_went_down, kb_decrease_scale):
+            on_key(key_went_down, kb_decrease_scale):
                 scale = max(1, scale-1)
                 turn_taken = true
 
         if gl_button("space") == 1:
             lev.floor.set_toc_index(top_left+int2_1*4, 0)
+
 
         // Check actions for valid moves.  Invalid move directions
         // are candidates for context sensitive bump actions with the 
@@ -84,8 +104,9 @@ class test_mode: game_mode
 
         // Process any bump actions first.
         for(poss_bumps) bp:
-            assert length(bp.value) == 1   //TODO priority scheme when there is more than once choice
-            when_binding(key_went_down, dir_to_action[find(all_dirs): _ == bp.key]):
+            //TODO priority scheme when there is more than once choice.  We just pick first here.
+            let act = dir_to_action[find(all_dirs): _ == bp.key]
+            on_bump_key(key_went_down, act, bp.value[0].desc.short_desc):
                 bp.value[0].desc.execute(bp.value[0].st)
                 turn_taken = true
             if turn_taken:
@@ -94,13 +115,13 @@ class test_mode: game_mode
         // Handle rest of actions normally.
         if not turn_taken:
             for(actions) p:
-                when_binding(key_went_down, p.st.kb_action):
+                on_key(key_went_down, p.st.kb_action):
                     p.desc.execute(p.st)
                     turn_taken = true
                 if turn_taken:
                     break
 
-        when_binding(key_went_down, kb_quit):
+        on_key(key_went_down, kb_quit):
             return ir_finished
 
         let view = screen_view_bounds(top_left, scale)
@@ -108,6 +129,26 @@ class test_mode: game_mode
 
         PERF.stop()
         return ir_ok
+
+    def write_possible_controls():
+        gl_ortho()
+        gl_color(color_white)
+        gl_set_shader("color")
+        gl_blend(blend_alpha)
+        gl_set_font_name("data/fonts/Droid_Sans/DroidSans.ttf")
+        gl_set_font_size(16)
+        let cdim = float(gl_text_size("W"))
+        let vspace = 4.0
+        var y = float(gl_window_size().y) - cdim.y - vspace
+
+        let keys = current_bindings()
+        guard keys
+        for(valid_keys) p:
+            let desc = keys.key_for_action(p.key)
+            guard desc
+            gl_translate(float2{cdim.x*2.0, y}):
+                gl_text("{desc.to_string()} - {p.value}")
+                y -= vspace + cdim.y
 
     def render():
         guard player
@@ -122,7 +163,7 @@ class test_mode: game_mode
         gl_translate(-float(top_left*lev.floor.pxsize)):
             lev.render(view)
 
-        write_control_help()
+        write_possible_controls()
         PERF.stop()
 
     def on_activate(reactivation: bool):
