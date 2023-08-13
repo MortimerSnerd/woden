@@ -142,7 +142,8 @@ class test_mode: game_mode
         var y = float(gl_window_size().y) - cdim.y - vspace
 
         let keys = current_bindings()
-        guard keys
+        guard keys and length(valid_keys) > 0
+        qsort_in_place(valid_keys) a, b: b.value < a.value
         for(valid_keys) p:
             let desc = keys.key_for_action(p.key)
             guard desc
