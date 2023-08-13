@@ -33,6 +33,16 @@ let kb_southeast = "move southeast"
 let kb_southwest = "move southwest"
 let kb_northwest = "move northwest"
 
+let movement_actions = [
+    kb_north,
+    kb_south,
+    kb_east,
+    kb_west,
+    kb_northeast,
+    kb_southeast,
+    kb_southwest,
+    kb_northwest
+]
 
 // Editor
 let kb_pick_block = "pick block"

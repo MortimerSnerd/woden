@@ -60,13 +60,45 @@ class test_mode: game_mode
         if gl_button("space") == 1:
             lev.floor.set_toc_index(top_left+int2_1*4, 0)
 
-        // Check inputs based on calculated possible actions.
+        // Check actions for valid moves.  Invalid move directions
+        // are candidates for context sensitive bump actions with the 
+        // direction keys.
+        let valid_dirs = []
+        let actions = []
         for_possible_actions(player) desc, st:
             guard st.kb_action != ""
-            when_binding(key_went_down, st.kb_action):
-                desc.execute(st)
+            if desc is move_action:
+                push(valid_dirs, st.where - player.cc)
+            push(actions, action_pair{desc, copy(st)})
+
+        // Accumulate any object interactions that are in a direction
+        // we can't move.
+        let poss_bumps = []
+        for(actions) p:
+            if p.desc is object_interaction and p.st.what:
+                let odir = p.st.what.cc - player.cc
+                if (find(valid_dirs): _ == odir) < 0:
+                    let ix = find_or_create<int2,[action_pair]>(poss_bumps, odir):
+                        []
+                    push(poss_bumps[ix].value, p)
+
+        // Process any bump actions first.
+        for(poss_bumps) bp:
+            assert length(bp.value) == 1   //TODO priority scheme when there is more than once choice
+            when_binding(key_went_down, dir_to_action[find(all_dirs): _ == bp.key]):
+                bp.value[0].desc.execute(bp.value[0].st)
                 turn_taken = true
-                return from for_possible_actions
+            if turn_taken:
+                break
+                
+        // Handle rest of actions normally.
+        if not turn_taken:
+            for(actions) p:
+                when_binding(key_went_down, p.st.kb_action):
+                    p.desc.execute(p.st)
+                    turn_taken = true
+                if turn_taken:
+                    break
 
         when_binding(key_went_down, kb_quit):
             return ir_finished

@@ -46,6 +46,12 @@ abstract class action_desc:
     def execute(st: action_state):
         fatal("action_desc: unimplemented execute() method")
 
+// Association of a action desc and a (presumably) valid state that can be
+// executed.
+struct action_pair:
+    desc: action_desc
+    st: action_state
+
 // action parameter types that we have action_desc subclasses for.
 // objself              - just needs instigator
 // objself, objtarget   - action on another object
