@@ -101,25 +101,36 @@ class test_mode: game_mode
                     let ix = find_or_create<int2,[action_pair]>(poss_bumps, odir):
                         []
                     push(poss_bumps[ix].value, p)
+                        
 
-        // Process any bump actions first.
-        for(poss_bumps) bp:
-            //TODO priority scheme when there is more than once choice.  We just pick first here.
-            let act = dir_to_action[find(all_dirs): _ == bp.key]
-            on_bump_key(key_went_down, act, bp.value[0].desc.short_desc):
-                bp.value[0].desc.execute(bp.value[0].st)
-                turn_taken = true
+        // Partition by kb_action to so we know if we need to prompt to 
+        // disambiguate an action.
+        let by_actname = []
+        for(poss_bumps) pb:
+            let actn = dir_to_action[find(all_dirs): _ == pb.key]
+            let ix = find_or_create<string, [action_pair]>(by_actname, actn):
+                []
+            for(pb.value) actpair:
+                push(by_actname[ix].value, actpair)
+        for(actions) ap:
+            let ix = find_or_create<string, [action_pair]>(by_actname, ap.st.kb_action):
+                []
+            push(by_actname[ix].value, ap)
+
+        // Check for inputs for the possible actions we collected.
+        for(by_actname) p:
+            //TODO not using on_bump_key temporarily
+            on_key(key_went_down, p.key):
+                if length(p.value) == 1:
+                    p.value[0].desc.execute(p.value[0].st)
+                    turn_taken = true
+                else:
+                    //TODO how do we prompt?
+                    print("prompt for {p.key}!")
+
             if turn_taken:
                 break
-                
-        // Handle rest of actions normally.
-        if not turn_taken:
-            for(actions) p:
-                on_key(key_went_down, p.st.kb_action):
-                    p.desc.execute(p.st)
-                    turn_taken = true
-                if turn_taken:
-                    break
+                    
 
         on_key(key_went_down, kb_quit):
             return ir_finished
@@ -206,6 +217,24 @@ class test_mode: game_mode
                     lev.add_object(dr)
                 else:
                     print("BALLS {err}")
+
+            var snd_door = false
+            let d2pos = int2{2, 4}
+            lev.for_objects_at(d2pos) o:
+                if o.type_name() == "door":
+                    snd_door = true
+
+            if not snd_door:
+                let err, d2 = create_object("door", d2pos, [
+                    mixin_desc{
+                        name: "door", 
+                        pnames: ["open", "closed", "orient"],
+                        pvals: [ "dev/door1ho.png", "dev/door1hc.png", "h"]
+                    }])
+                if d2:
+                    lev.add_object(d2)
+                else:
+                    print("create door 2 {err}")
 
             // Pull player saved with level.
             if not player:
