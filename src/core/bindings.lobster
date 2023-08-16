@@ -34,6 +34,9 @@ class key_desc:
    def same_as(other):
       return mods == other.mods and key == other.key
 
+   def operator<(other: key_desc) -> bool:
+      return mods < other.mods or (mods == other.mods and key < other.key)
+
    // Compares key test and the output of gl_button, returning true 
    // if the test should pass.
    def key_test_passes(test: key_tests):

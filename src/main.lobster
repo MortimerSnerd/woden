@@ -39,10 +39,6 @@ class test_mode: game_mode
         key_checked(action)
         when_binding(test, action, body)
 
-    private def on_bump_key(test: key_tests, action: string, desc: string, body):
-        key_checked(action, desc)
-        when_binding(test, action, body)
-
     def update(d_t: float) -> input_result:
         guard player:
             return ir_ok
@@ -79,6 +75,11 @@ class test_mode: game_mode
         if gl_button("space") == 1:
             lev.floor.set_toc_index(top_left+int2_1*4, 0)
 
+        struct key_choice:
+            key: key_desc   // Key to be pressed to take the action
+            act: string     // Action to be checked.  Can differ from the action_state.kb_action in bump case
+            ap: action_pair // Action pair from a possible move query
+
 
         // Check actions for valid moves.  Invalid move directions
         // are candidates for context sensitive bump actions with the 
@@ -91,46 +92,47 @@ class test_mode: game_mode
                 push(valid_dirs, st.where - player.cc)
             push(actions, action_pair{desc, copy(st)})
 
+
+        let choices = []
+        let bnd = current_bindings()
+        guard bnd:
+            return ir_ok
+
         // Accumulate any object interactions that are in a direction
-        // we can't move.
-        let poss_bumps = []
+        // we can't move.  For these cases a context sensitive move can work.
         for(actions) p:
             if p.desc is object_interaction and p.st.what:
                 let odir = p.st.what.cc - player.cc
-                if (find(valid_dirs): _ == odir) < 0:
-                    let ix = find_or_create<int2,[action_pair]>(poss_bumps, odir):
-                        []
-                    push(poss_bumps[ix].value, p)
+                let diri = find(valid_dirs): _ == odir
+                if diri < 0:
+                    let actn = dir_to_action[find(all_dirs): _ == odir]
+                    let kdesc = bnd.key_for_action(actn)
+                    guard kdesc
+                    push(choices, key_choice{kdesc, actn, p})
                         
 
-        // Partition by kb_action to so we know if we need to prompt to 
-        // disambiguate an action.
-        let by_actname = []
-        for(poss_bumps) pb:
-            let actn = dir_to_action[find(all_dirs): _ == pb.key]
-            let ix = find_or_create<string, [action_pair]>(by_actname, actn):
-                []
-            for(pb.value) actpair:
-                push(by_actname[ix].value, actpair)
+        // Accumulate rest of the actions.
         for(actions) ap:
-            let ix = find_or_create<string, [action_pair]>(by_actname, ap.st.kb_action):
-                []
-            push(by_actname[ix].value, ap)
-
-        // Check for inputs for the possible actions we collected.
-        for(by_actname) p:
-            //TODO not using on_bump_key temporarily
-            on_key(key_went_down, p.key):
-                if length(p.value) == 1:
-                    p.value[0].desc.execute(p.value[0].st)
+            let kdesc = bnd.key_for_action(ap.st.kb_action)
+            guard kdesc
+            push(choices, key_choice{kdesc, ap.st.kb_action, ap})
+    
+        // Group by actual key pressed, so we can see when
+        // to prompt when there is more than one choice for a key.
+        qsort_in_place(choices) a, b: a.key < b.key
+        for_groups_in(choices, fn(a,b): a.key == b.key) fst, last: 
+            if fst == last:
+                key_checked(choices[fst].act, choices[fst].ap.st.kb_action)
+                when_binding(key_went_down, choices[fst].act):
+                    choices[fst].ap.desc.execute(choices[fst].ap.st)
                     turn_taken = true
-                else:
-                    //TODO how do we prompt?
-                    print("prompt for {p.key}!")
+            else:
+                key_checked(choices[fst].act, choices[fst].ap.st.kb_action + " (prompt)")
+                //TODO add way to prompt
 
             if turn_taken:
-                break
-                    
+                return from for_groups_in
+
 
         on_key(key_went_down, kb_quit):
             return ir_finished

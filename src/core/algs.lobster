@@ -944,6 +944,17 @@ def choice_letter(i: int):
 
    return rv
 
+// Given a grouping function g(a, b) that returns true if two items
+// are in the same group, calls body(first_ix, last_ix) for 
+// groups of items that are adjacent in the array. 
+def for_groups_in(arr, grp, body):
+    var i = 0
+    while i < length(arr):
+        let si = i++
+        while i < length(arr) and grp(arr[si], arr[i]):
+            i++
+        body(si, i-1)
+
 // Visits all grid positions between start and finish, in that order.
 def iter_line(start: int2, finish: int2, body):
    // We use floats, because using floats is not that expensive, and it's
