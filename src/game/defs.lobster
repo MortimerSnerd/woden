@@ -1,4 +1,5 @@
 // Some top level constants and utility functions.
+import color
 import core.aabb
 import core.bindings
 import core.perf
@@ -56,6 +57,10 @@ let kb_toggle_lighting = "toggle lighting"
 let kb_increase_light = "increase light"
 let kb_decrease_light = "decrease light"
 
+// Colors used by ui elements
+let prompt_bg = color{0.2, 0.2, 0.2, 1.0}
+let prompt_fg = color_white
+
 // Layer render depths
 let floor_render_layer = 0.0
 let obj_render_layer = 0.5
@@ -93,6 +98,11 @@ def set_ui_editor_font(header = false):
     gl_set_font_name("data/fonts/Zapato/greensboro.ttf")
     gl_set_font_size(if header: 28 else: 20, 1.0)
 
+// Sets the font used for player prompts
+def set_prompt_font():
+    gl_set_font_name("data/fonts/Droid_Sans/DroidSans.ttf")
+    gl_set_font_size(18)
+
 // Assertion that pops a breakpoint if DEBUG_BUILD
 def gassert(cond):
     if not cond:
@@ -117,8 +127,7 @@ def write_control_help():
     gl_color(color_white)
     gl_set_shader("color")
     gl_blend(blend_alpha)
-    gl_set_font_name("data/fonts/Droid_Sans/DroidSans.ttf")
-    gl_set_font_size(16)
+    set_prompt_font()
     let cdim = float(gl_text_size("W"))
     let vspace = 4.0
     var y = float(gl_window_size().y) - cdim.y - vspace

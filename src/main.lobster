@@ -14,10 +14,12 @@ import game.defs
 import game.draw
 import game.editor
 import game.grids
+import game.prompts
 import game.mode
 import game.objects
 import game.propmap
 import game.state
+
 
 class test_mode: game_mode
     lev: grid_level
@@ -27,10 +29,18 @@ class test_mode: game_mode
     first_frame = false
     last_winsize = int2_0
 
+    cur_action_prompt = nil :: player_prompt<action_pair>
+
+
     // We maintain our own list of checked keys instead of using the core.bindings
     // one because context sensitive bump actions are more complicated than static
     // action -> does_something mappings.
     valid_keys = [] :: kvpair<string, string>   // kb_action, action desc
+
+    private def set_prompt(p):
+        assert not cur_action_prompt
+        cur_action_prompt = p
+        //activate_mode(p)
 
     private def key_checked(action: string, desc: string = ""):
         push(valid_keys, kvpair<string,string>{action, if desc == "": action else: desc})
@@ -42,6 +52,8 @@ class test_mode: game_mode
     def update(d_t: float) -> input_result:
         guard player:
             return ir_ok
+
+
         bindings_begin_frame()
         valid_keys = []
         PERF.start("main update")
@@ -59,6 +71,20 @@ class test_mode: game_mode
 
         on_key(key_went_down, kb_debugger):
             breakpoint()
+
+        on_key(key_went_down, kb_quit):
+            return ir_finished
+
+        if cur_action_prompt:
+            let rc = cur_action_prompt.update(d_t)
+            if rc == ir_finished:
+                if cur_action_prompt.result:
+                    cur_action_prompt.result.payload.desc.execute(cur_action_prompt.result.payload.st)
+                    turn_taken = true
+                cur_action_prompt = nil
+            else:
+                return ir_ok
+
 
         on_key(key_went_down, kb_editor):
             activate_mode(editor_mode{lev, top_left})
@@ -120,7 +146,7 @@ class test_mode: game_mode
         // Group by actual key pressed, so we can see when
         // to prompt when there is more than one choice for a key.
         qsort_in_place(choices) a, b: a.key < b.key
-        for_groups_in(choices, fn(a,b): a.key == b.key) fst, last: 
+        for_groups_in(choices, fn(a,b): a.key.same_as(b.key)) fst, last: 
             if fst == last:
                 key_checked(choices[fst].act, choices[fst].ap.st.kb_action)
                 when_binding(key_went_down, choices[fst].act):
@@ -128,14 +154,37 @@ class test_mode: game_mode
                     turn_taken = true
             else:
                 key_checked(choices[fst].act, choices[fst].ap.st.kb_action + " (prompt)")
-                //TODO add way to prompt
+                when_binding(key_went_down, choices[fst].act):
+                    // Characterize choices to pick appropriate prompt.
+                    var all_interactions = true
+                    var all_neighbors = true
+                    for_range_incl(fst, last) i:
+                        if choices[i].ap.desc is object_interaction:
+                            all_interactions = all_interactions and true
+                            let what = choices[i].ap.st.what
+                            all_neighbors = what and what.cc.is_neighbor_of(player.cc)
+
+                    if all_neighbors:
+                        let pc = []
+                        for_range_incl(fst, last) i:
+                            let ch = choices[i]
+                            guard ch.ap.st.what
+                            let dirv = ch.ap.st.what.cc - player.cc
+                            let diract = dir_to_action[find(all_dirs): _ == dirv]
+                            let dirkey = bnd.key_for_action(diract) 
+                            guard dirkey
+                            push(pc, prompt_choice<action_pair>{
+                                dirkey, ch.ap
+                            })
+                        set_prompt(direction_prompt<action_pair>(pc))
+                    else:
+                        fatal("no prompt picked for {fst} {choices}")
+                            
 
             if turn_taken:
                 return from for_groups_in
 
 
-        on_key(key_went_down, kb_quit):
-            return ir_finished
 
         let view = screen_view_bounds(top_left, scale)
         lev.update(d_t, turn_taken, player.cc, 30, view)
@@ -176,6 +225,9 @@ class test_mode: game_mode
         gl_set_shader("textured_color")
         gl_translate(-float(top_left*lev.floor.pxsize)):
             lev.render(view)
+
+        if cur_action_prompt:
+            cur_action_prompt.render()
 
         write_possible_controls()
         PERF.stop()
