@@ -148,9 +148,10 @@ class test_mode: game_mode
         qsort_in_place(choices) a, b: a.key < b.key
         for_groups_in(choices, fn(a,b): a.key.same_as(b.key)) fst, last: 
             if fst == last:
-                key_checked(choices[fst].act, choices[fst].ap.st.kb_action)
-                when_binding(key_went_down, choices[fst].act):
-                    choices[fst].ap.desc.execute(choices[fst].ap.st)
+                let ch = choices[fst]
+                key_checked(ch.act, ch.ap.st.kb_action)
+                when_binding(key_went_down, ch.act):
+                    ch.ap.desc.execute(ch.ap.st)
                     turn_taken = true
             else:
                 key_checked(choices[fst].act, choices[fst].ap.st.kb_action + " (prompt)")
@@ -159,12 +160,21 @@ class test_mode: game_mode
                     var all_interactions = true
                     var all_neighbors = true
                     for_range_incl(fst, last) i:
-                        if choices[i].ap.desc is object_interaction:
-                            all_interactions = all_interactions and true
-                            let what = choices[i].ap.st.what
-                            all_neighbors = what and what.cc.is_neighbor_of(player.cc)
+                        let act = choices[i].ap.desc
+                        switch act:
+                            case target_action:
+                                all_interactions = all_interactions and act is object_interaction
+                                let what = choices[i].ap.st.what
+                                all_neighbors = all_neighbors and what and what.cc.is_neighbor_of(player.cc)
+                            case location_action:
+                                all_interactions = false
+                                all_neighbors = all_neighbors and choices[i].ap.st.where.is_neighbor_of(player.cc)
+                            case self_action:
+                                all_interactions = false
+                                all_neighbors = false
 
                     if all_neighbors:
+                        // Can just prompt for a direction
                         let pc = []
                         for_range_incl(fst, last) i:
                             let ch = choices[i]
@@ -180,7 +190,6 @@ class test_mode: game_mode
                     else:
                         fatal("no prompt picked for {fst} {choices}")
                             
-
             if turn_taken:
                 return from for_groups_in
 
