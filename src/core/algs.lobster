@@ -152,78 +152,6 @@ def set_push(arr, v):
    if (find(arr): _ == v) == -1:
       push(arr, v)
 
-// Treating arrays as binary heaps.
-private def lchild(i: int) -> int:
-   return 2*i + 1
-
-private def rchild(i: int) -> int:
-   return 2*i + 2
-
-private def parent(i:int) -> int:
-   assert i != 0
-   return (i-1)/2 // Assume: division floored.
-
-def heap_swap<T>(arr: [T], ai: int, bi: int):
-   let t = arr[ai]
-   arr[ai] = arr[bi]
-   arr[bi] = t
-
-def heap_bubble_up<T>(arr: [T], i: int, cmpfn):
-   var pos = i
-
-   while pos > 0 and not cmpfn(arr[parent(pos)], arr[pos]):
-      heap_swap(arr, parent(pos), pos)
-      pos = parent(pos)
-
-def heap_bubble_down<T>(arr: [T], i: int, cmpfn):
-   var pos = i
-   var inplace = false
-
-   while not inplace and pos < length(arr)-1:
-      let li = lchild(pos)
-      let ri = li + 1
-      let li_exists = li < length(arr)
-      let ri_exists = ri < length(arr)
-
-      if (not li_exists or cmpfn(arr[pos], arr[li])) and (not ri_exists or cmpfn(arr[pos], arr[ri])):
-         inplace = true
-      else:
-         if li_exists and ri_exists:
-            if cmpfn(arr[li], arr[ri]):
-               heap_swap(arr, pos, li)
-               pos = li
-            else:
-               heap_swap(arr, pos, ri)
-               pos = ri
-         else:
-            // One child is not present.
-            if li_exists:
-               heap_swap(arr, pos, li)
-               pos = li
-            else:
-               heap_swap(arr, pos, ri)
-               pos = ri
-
-// Treats `arr` like a binary heap, and adds
-// item to the proper place in the tree.  
-// cmpfn can be <= for a min heap, or >= for a max
-// heap.  
-def heap_add<T>(arr: [T], item: T, cmpfn):
-   let i = length(arr)
-   push(arr, item)
-   heap_bubble_up(arr, i, cmpfn)
-
-def heap_pop<T>(arr: [T], cmpfn) -> T:
-   let rv = arr[0]
-
-   if length(arr) == 0:
-      pop(arr)
-   else:
-      arr[0] = arr[length(arr)-1]
-      pop(arr)
-      heap_bubble_down(arr, 0, cmpfn)
-
-   return rv
 
 // Searches for entry in `xs` where cmpfn(xs[x], key) == 0. 
 // `cmpfn(a, b)` should return < 0 if keyof(a) < key.
@@ -271,12 +199,12 @@ def binary_search_by_key(xs, key, cmpfn) -> bool, int:
 // at y*win_height.  If y <= 0, assumed to be a negated y coordinate instead
 // of a multiplier.  Assumes the default ortho projection.
 def center_text_x(txt: string, y: float = 0.5):
-   let wsz = to_f(gl_window_size())
-   let tdim = gl_text_size(txt)
+   let wsz = to_f(gl.window_size())
+   let tdim = gl.text_size(txt)
    let acty = if y < 0.0: -1.0 * y else: y*wsz.y
 
-   gl_translate(float2{wsz.x*0.5 - tdim.x*0.5, acty}):
-      gl_text(txt)
+   gl.translate(float2{wsz.x*0.5 - tdim.x*0.5, acty}):
+      gl.text(txt)
 
 // Represents a linear interpolation happening in a distinct
 // time interval.
@@ -453,10 +381,10 @@ struct Rect:
       let p1 = to_f(int2{bottomRight.x, topLeft.y})
       let p2 = to_f(bottomRight)
       let p3 = to_f(int2{topLeft.x, bottomRight.y})
-      gl_line(p0, p1, thickness)
-      gl_line(p1, p2, thickness)
-      gl_line(p2, p3, thickness)
-      gl_line(p3, p0, thickness)
+      gl.line(p0, p1, thickness)
+      gl.line(p1, p2, thickness)
+      gl.line(p2, p3, thickness)
+      gl.line(p3, p0, thickness)
 
    def width() -> int:
        return bottomRight.x - topLeft.x + 1
@@ -591,8 +519,8 @@ def worldToGrid(r: Rectf) -> Rect:
 // world coordinates, based on the passed in view rectangle.
 // `tile_size` is the size map tiles are displayed in, in pixels.
 def world_mouse_pos(view: Rectf, tile_size: float) -> float2:
-   let mpi = gl_mouse_pos(0)
-   let wsz = gl_window_size()
+   let mpi = gl.mouse_pos(0)
+   let wsz = gl.window_size()
    let viewsz = view.bottomRight - view.topLeft
 
    if wsz.x > 0 and wsz.y > 0:
@@ -606,10 +534,10 @@ def world_mouse_pos(view: Rectf, tile_size: float) -> float2:
 
 
 def render(r:: Rectf, thickness):
-   gl_line(topLeft, float2{bottomRight.x, topLeft.y}, thickness)
-   gl_line(float2{bottomRight.x, topLeft.y}, bottomRight, thickness)
-   gl_line(bottomRight, float2{topLeft.x, bottomRight.y}, thickness)
-   gl_line(float2{topLeft.x, bottomRight.y}, topLeft, thickness)
+   gl.line(topLeft, float2{bottomRight.x, topLeft.y}, thickness)
+   gl.line(float2{bottomRight.x, topLeft.y}, bottomRight, thickness)
+   gl.line(bottomRight, float2{topLeft.x, bottomRight.y}, thickness)
+   gl.line(float2{topLeft.x, bottomRight.y}, topLeft, thickness)
 
 // Calls body only with the items in `arr` that match `pred`.
 def filter_call(arr, pred, body):

@@ -33,7 +33,7 @@ class light_mixin: object_mixin
             is_on = true
         elif what == ia_turn_off:
             is_on = false
-        return true, 0.0, ""
+        return true, 0.1, ""
 
     def viz_overlaps(parent: object_instance, view: aabb2i) -> bool:
         guard is_on:

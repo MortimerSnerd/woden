@@ -41,7 +41,7 @@ def write_targa_header(be: binary_editor, opts: targa_opts):
    be.write_byte(opts.bpp)
    be.write_byte(imgdesc)
 
-// Given a string from gl_read_texture(), writes it out in the format expected 
+// Given a string from gl.read_texture(), writes it out in the format expected 
 // for a 24 or 32bpp targa file.
 def write_pixels_from_texture(be: binary_editor, tx_pixels: string, 
                               include_alpha = false):

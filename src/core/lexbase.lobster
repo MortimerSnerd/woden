@@ -99,7 +99,7 @@ class lex_base:
             return 0.0
 
     def matched_word(word: string) -> bool:
-        if compare_substring(word, 0, buf, p, length(word)) == 0:
+        if (p+length(word)) < length(buf) and compare_substring(word, 0, buf, p, length(word)) == 0:
             p += length(word)         
             return true
         else:

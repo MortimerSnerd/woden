@@ -42,20 +42,20 @@ class mesh_builder:
       return length(pos3)*12 + length(tc1)*8 + length(tc2)*8 + length(normals)*12 + length(colors)*16 + length(indices)*4
 
    // Creates a new mesh not using indices given the
-   // 'fmt' format string.  (see gl_new_mesh for syntax
+   // 'fmt' format string.  (see gl.new_mesh for syntax
    // of format string).  Does not clear the accumulated
    // mesh data.
    def make_mesh(fmt: string) -> resource<mesh>:
-      return gl_new_mesh(fmt, pos3, colors, normals, tc1, tc2, [])
+      return gl.new_mesh(fmt, pos3, colors, normals, tc1, tc2, [])
       
    // Creates a new indexed mesh given the
-   // 'fmt' format string.  (see gl_new_mesh for syntax
+   // 'fmt' format string.  (see gl.new_mesh for syntax
    // of format string).  Does not clear the accumulated
    // mesh data.  Assumes the mesh was built up with the
    // indexed versions of the mesh helper functions.
    def make_mesh_indexed(fmt: string) -> resource<mesh>:
       assert(length(indices) > 0)
-      return gl_new_mesh(fmt, pos3, colors, normals, tc1, tc2, indices)
+      return gl.new_mesh(fmt, pos3, colors, normals, tc1, tc2, indices)
       
    // Debug output.  Just shows vertex data, doesn't repeat it based
    // on any indices.

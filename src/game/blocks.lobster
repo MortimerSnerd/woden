@@ -97,7 +97,7 @@ private let blkdefs_file = "dist/blockdefs"
 
 let blocks_tx_format = texture_format_nearest_mag | texture_format_nearest_min | texture_format_nomipmap
 
-// Called after gl_new_window to load block definitions and images.
+// Called after gl.new_window to load block definitions and images.
 // Can be called more than once.  Returns nil on success, or an 
 // error message otherwise.  This can modify the current shader and modelview.
 
@@ -125,11 +125,11 @@ def load_blockdefs() -> string?:
     for(blks) b:
         //TODO reloading the same texture repeatedly for splitno defs here
         let file = "dist/images/{b.image}"
-        let tx = gl_load_texture(file, blocks_tx_format)
+        let tx = gl.load_texture(file, blocks_tx_format)
         if not tx:
             return "load_blockdefs: could not load {file}"
 
-        var dims = gl_texture_size(tx)
+        var dims = gl.texture_size(tx)
         if b.splitno >= 0:
             dims = dims / 4
 
@@ -148,20 +148,20 @@ def load_blockdefs() -> string?:
 
     // Populate the atlas images with our texture collection.
     BLOCK_PAGES = map(bld.num_pages()): 
-                     gl_create_blank_texture(int3{ATLAS_DIM, ATLAS_DIM, 1}, blocks_tx_format)
+                     gl.create_blank_texture(int3{ATLAS_DIM, ATLAS_DIM, 1}, blocks_tx_format)
 
     // NB: doing this with render_to_texture is ugly, but maybe not as ugly
     //     as doing manual blits in a big string of image data.
-    gl_set_shader("textured")
+    gl.set_shader("textured")
     for(bld.num_pages) pg:
         render_to_texture(BLOCK_PAGES[pg], int2{ATLAS_DIM, ATLAS_DIM}, false, nil, 
                           blocks_tx_format):
-            gl_ortho()
-            gl_color(color_white)
+            gl.ortho()
+            gl.color(color_white)
             for(length(txs)) i:
                 let rpage, trect = bld.rect_for(athand[i])
                 if pg == rpage:
-                    gl_set_primitive_texture(0, txs[i])
+                    gl.set_primitive_texture(0, txs[i])
                     var tc_tl = float2_0
                     var tc_sz = float2_1
                     if blks[i].splitno >= 0:
@@ -173,8 +173,8 @@ def load_blockdefs() -> string?:
                         tc_sz = float2_1*0.25
 
                     //TODO extrude border around items
-                    gl_translate(float(trect.top_left)):
-                        gl_rect_tc_col(float(trect.extent), tc_tl, tc_sz, [])
+                    gl.translate(float(trect.top_left)):
+                        gl.rect_tc_col(float(trect.extent), tc_tl, tc_sz, [])
                     
 
     // Finally, fill out arrays.
@@ -184,10 +184,10 @@ def load_blockdefs() -> string?:
         let pg, trect = bld.rect_for(athand[i])
         if b.splitno >= 0:
             push(blk_img_name, b.image + "|{b.splitno}")
-            push(blk_img_size, gl_texture_size(txs[i]) / 4)
+            push(blk_img_size, gl.texture_size(txs[i]) / 4)
         else:
             push(blk_img_name, b.image)
-            push(blk_img_size, gl_texture_size(txs[i]))
+            push(blk_img_size, gl.texture_size(txs[i]))
         push(blk_page_no, pg)
 
         let tlx = float(trect.top_left.x)/fdim + hapx
@@ -223,7 +223,7 @@ private def read_blockdefs(fname: string) -> string?:
     BLOCK_PAGES = []
     for(npages) p:
         let afname = "dist/atlas{p}.tga"
-        let tx = gl_load_texture(afname, blocks_tx_format)
+        let tx = gl.load_texture(afname, blocks_tx_format)
         guard tx:
             return "read_blockdefs: could not load texture {afname}"
         push(BLOCK_PAGES, tx)
@@ -251,7 +251,7 @@ private def read_blockdefs(fname: string) -> string?:
 private def save_blockdefs(fname: string) -> string?:
     // Save out page images first, as that's the most likely failure.
     for(BLOCK_PAGES) tx, pg_no:
-        let pxdat = gl_read_texture(tx)
+        let pxdat = gl.read_texture(tx)
         guard pxdat:
             return "save_blockdefs: failed reading texture for page {pg_no}"
 

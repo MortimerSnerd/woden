@@ -87,8 +87,8 @@ def draw_finish_meshes() -> [kvpair<resource<texture>, resource<mesh> >]:
 def draw_finish():
     let meshes = draw_finish_meshes()
     for(meshes) p:
-        gl_set_primitive_texture(0, p.key)
-        gl_render_mesh(p.value)
+        gl.set_primitive_texture(0, p.key)
+        gl.render_mesh(p.value)
 
 // Sets the model view up for an ortho view that sets up pixel coordinates for the
 // view.  Put in it's own function because initially the setup was wrong, and tricky
@@ -96,6 +96,6 @@ def draw_finish():
 def draw_ortho(logical_size: int2):
     let sz = float(logical_size)
 
-    gl_ortho3d(float3{sz.x*0.5, sz.y*0.5, 0.0}, 
+    gl.ortho3d(float3{sz.x*0.5, sz.y*0.5, 0.0}, 
                float3{sz.x*0.5, sz.y*0.5, draw_layer_range})
 

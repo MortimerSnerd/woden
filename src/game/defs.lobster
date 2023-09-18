@@ -86,7 +86,7 @@ let PERF = stopwatch{}
 
 // View size in floor coordinates given current screen resolution.
 def screen_view_size(scale: int = 1) -> int2:
-    return gl_window_size()/(floor_pxsize*scale)
+    return gl.window_size()/(floor_pxsize*scale)
 
 // Creates a cell view rect for the given top left position and the current
 // screen size.
@@ -95,13 +95,13 @@ def screen_view_bounds(top_left: int2, scale: int = 1) -> aabb2i:
 
 // Sets the font used for editor ui
 def set_ui_editor_font(header = false):
-    gl_set_font_name("data/fonts/Zapato/greensboro.ttf")
-    gl_set_font_size(if header: 28 else: 20, 1.0)
+    gl.set_font_name("data/fonts/Zapato/greensboro.ttf")
+    gl.set_font_size(if header: 28 else: 20, 1.0)
 
 // Sets the font used for player prompts
 def set_prompt_font():
-    gl_set_font_name("data/fonts/Droid_Sans/DroidSans.ttf")
-    gl_set_font_size(18)
+    gl.set_font_name("data/fonts/Droid_Sans/DroidSans.ttf")
+    gl.set_font_size(18)
 
 // Assertion that pops a breakpoint if DEBUG_BUILD
 def gassert(cond):
@@ -123,18 +123,18 @@ def deserialize_bb2i(D: binary_editor) -> aabb2i:
 
 // Helper function for drawing simple binding help using core.bindings features.
 def write_control_help():
-    gl_ortho()
-    gl_color(color_white)
-    gl_set_shader("color")
-    gl_blend(blend_alpha)
+    gl.ortho()
+    gl.color(color_white)
+    gl.set_shader("color")
+    gl.blend(blend_alpha)
     set_prompt_font()
-    let cdim = float(gl_text_size("W"))
+    let cdim = float(gl.text_size("W"))
     let vspace = 4.0
-    var y = float(gl_window_size().y) - cdim.y - vspace
+    var y = float(gl.window_size().y) - cdim.y - vspace
 
     for_tested_bindings() act, _test, desc:
-        gl_translate(float2{cdim.x*2.0, y}):
-            gl_text("{desc.to_string()} - {act}")
+        gl.translate(float2{cdim.x*2.0, y}):
+            gl.text("{desc.to_string()} - {act}")
             y -= vspace + cdim.y
 
 

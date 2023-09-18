@@ -96,10 +96,10 @@ struct rect<P>:
       let p1 = mkpt(br.x, top_left.y).mkfloat
       let p2 = br.mkfloat
       let p3 = mkpt(top_left.x, br.y).mkfloat
-      gl_line(p0, p1, thickness)
-      gl_line(p1, p2, thickness)
-      gl_line(p2, p3, thickness)
-      gl_line(p3, p0, thickness)
+      gl.line(p0, p1, thickness)
+      gl.line(p1, p2, thickness)
+      gl.line(p2, p3, thickness)
+      gl.line(p3, p0, thickness)
 
    // Returns true if p is a point inside of the rectangle.
    def contains(p) -> bool:

@@ -10,6 +10,7 @@ import game.actions
 import game.actions.query
 import game.allobjects
 import game.blocks
+import game.brans
 import game.defs
 import game.draw
 import game.editor
@@ -28,6 +29,8 @@ class test_mode: game_mode
     player = nil :: object_instance
     first_frame = false
     last_winsize = int2_0
+
+    abs_game_time = 0.0
 
     cur_action_prompt = nil :: player_prompt<action_pair>
 
@@ -58,7 +61,7 @@ class test_mode: game_mode
         valid_keys = []
         PERF.start("main update")
         var turn_taken = false
-        let wsz = gl_window_size()
+        let wsz = gl.window_size()
 
         if wsz != last_winsize:
             // Trigger redraw of playfield, including masks.
@@ -79,7 +82,9 @@ class test_mode: game_mode
             let rc = cur_action_prompt.update(d_t)
             if rc == ir_finished:
                 if cur_action_prompt.result:
-                    cur_action_prompt.result.payload.desc.execute(cur_action_prompt.result.payload.st)
+                    abs_game_time = execute_turn(cur_action_prompt.result.payload.desc, 
+                                                 cur_action_prompt.result.payload.st,
+                                                 abs_game_time)
                     turn_taken = true
                 cur_action_prompt = nil
             else:
@@ -98,7 +103,7 @@ class test_mode: game_mode
                 scale = max(1, scale-1)
                 turn_taken = true
 
-        if gl_button("space") == 1:
+        if gl.button("space") == 1:
             lev.floor.set_toc_index(top_left+int2_1*4, 0)
 
         struct key_choice:
@@ -151,7 +156,7 @@ class test_mode: game_mode
                 let ch = choices[fst]
                 key_checked(ch.act, ch.ap.st.kb_action)
                 when_binding(key_went_down, ch.act):
-                    ch.ap.desc.execute(ch.ap.st)
+                    abs_game_time = execute_turn(ch.ap.desc, ch.ap.st, abs_game_time)
                     turn_taken = true
             else:
                 key_checked(choices[fst].act, choices[fst].ap.st.kb_action + " (prompt)")
@@ -202,15 +207,15 @@ class test_mode: game_mode
         return ir_ok
 
     def write_possible_controls():
-        gl_ortho()
-        gl_color(color_white)
-        gl_set_shader("color")
-        gl_blend(blend_alpha)
-        gl_set_font_name("data/fonts/Droid_Sans/DroidSans.ttf")
-        gl_set_font_size(16)
-        let cdim = float(gl_text_size("W"))
+        gl.ortho()
+        gl.color(color_white)
+        gl.set_shader("color")
+        gl.blend(blend_alpha)
+        gl.set_font_name("data/fonts/Droid_Sans/DroidSans.ttf")
+        gl.set_font_size(16)
+        let cdim = float(gl.text_size("W"))
         let vspace = 4.0
-        var y = float(gl_window_size().y) - cdim.y - vspace
+        var y = float(gl.window_size().y) - cdim.y - vspace
 
         let keys = current_bindings()
         guard keys and length(valid_keys) > 0
@@ -218,21 +223,21 @@ class test_mode: game_mode
         for(valid_keys) p:
             let desc = keys.key_for_action(p.key)
             guard desc
-            gl_translate(float2{cdim.x*2.0, y}):
-                gl_text("{desc.to_string()} - {p.value}")
+            gl.translate(float2{cdim.x*2.0, y}):
+                gl.text("{desc.to_string()} - {p.value}")
                 y -= vspace + cdim.y
 
     def render():
         guard player
         PERF.start("main render")
-        gl_clear(color{1.0, 1.0, 1.0, 0.0})
-        let wsz = gl_window_size()
+        gl.clear(color{1.0, 1.0, 1.0, 0.0})
+        let wsz = gl.window_size()
         top_left = player.cc - screen_view_size(scale)/2
         let view = screen_view_bounds(top_left, scale)
 
         draw_ortho(wsz/scale)
-        gl_set_shader("textured_color")
-        gl_translate(-float(top_left*lev.floor.pxsize)):
+        gl.set_shader("textured_color")
+        gl.translate(-float(top_left*lev.floor.pxsize)):
             lev.render(view)
 
         if cur_action_prompt:
@@ -282,10 +287,23 @@ class test_mode: game_mode
                     print("BALLS {err}")
 
             var snd_door = false
+            var goober = false
             let d2pos = int2{2, 4}
             lev.for_objects_at(d2pos) o:
                 if o.type_name() == "door":
                     snd_door = true
+                elif o.type_name() == "goober":
+                    goober = true
+
+            if not goober:
+                let err, goob = create_object("goober", d2pos + int2_x*2, [])
+                if goob:
+                    //TODO thinkers can probably be attached to objects as mixins, 
+                    // which also provides mechanism for parameters.
+                    add_thinker(randomwalker{goob}, 0.0)
+                    lev.add_object(goob)
+                else:
+                    print("GOOBER error {err}")
 
             if not snd_door:
                 let err, d2 = create_object("door", d2pos, [
@@ -325,18 +343,18 @@ class test_mode: game_mode
             pop_bindings()
 
 def go():
-    fatal(gl_window("Eat Crap", 1024, 768))
-    fatal(gl_load_materials("dist/woden.materials"))
+    fatal(gl.window("Eat Crap", 1024, 768))
+    fatal(gl.load_materials("dist/woden.materials"))
     //LoggingLevel |= Timings
-    im_init()
+    im.init()
     fatal(load_blockdefs())
     fatal(init_objects())
     //TODO wall /2 or /4 from floor/mob size?
     let tm = test_mode{mk_grid_level(int2_1*floor_pxsize)}
     activate_mode(tm)
 
-    while gl_frame() and has_active_mode():
-        update_active_mode(gl_delta_time())
+    while gl.frame() and has_active_mode():
+        update_active_mode(gl.delta_time())
         render_active_mode()
 
 go()

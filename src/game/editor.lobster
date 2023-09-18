@@ -15,10 +15,10 @@ private let cell_pick_margins = 10
 private def draw_bb_outline(a, thick):
     let mins = float(a.mins)
     let maxs = float(a.maxs)
-    gl_line(mins, float2{maxs.x, mins.y}, thick)
-    gl_line(mins, float2{mins.x, maxs.y}, thick)
-    gl_line(maxs, float2{maxs.x, mins.y}, thick)
-    gl_line(maxs, float2{mins.x, maxs.y}, thick)
+    gl.line(mins, float2{maxs.x, mins.y}, thick)
+    gl.line(mins, float2{mins.x, maxs.y}, thick)
+    gl.line(maxs, float2{maxs.x, mins.y}, thick)
+    gl.line(maxs, float2{mins.x, maxs.y}, thick)
 
 enum edit_mode:
     em_change_floor, em_change_walls
@@ -108,17 +108,17 @@ class editor_mode: game_mode
             lev.i_see_all()
 
     private def highlight_cell_under_cursor():
-        let mp = gl_mouse_pos(0)
+        let mp = gl.mouse_pos(0)
         let tl_s = cell_tl_to_screen(screen_to_cell(mp))
         let bb = aabb2i{tl_s, tl_s + cell_pxsize()*scale}
-        gl_color(color_white):
+        gl.color(color_white):
             draw_bb_outline(bb, 1.0)
         if mode == em_change_walls:
             // outline floor block as well to make it easy to keep things aligned.
             let ftl_s = cell_tl_to_screen(screen_to_cell(mp, lev.floor.pxsize), 
                                           lev.floor.pxsize)
             let fbb = aabb2i{ftl_s, ftl_s + lev.floor.pxsize*scale}
-            gl_color(color_blue):
+            gl.color(color_blue):
                 draw_bb_outline(fbb, 1.0)
 
     private def for_stamp_cells(body):
@@ -130,7 +130,7 @@ class editor_mode: game_mode
              
     private def render_cur_stamp():
         if length(stamp_ixs) > 0:
-            let tl = gl_mouse_pos(0)/scale - cell_pxsize()/2
+            let tl = gl.mouse_pos(0)/scale - cell_pxsize()/2
             for_stamp_cells() cc, ti:
                 if ti > 0:
                     draw_image(get_toc().block_index(ti),
@@ -139,7 +139,7 @@ class editor_mode: game_mode
            if cur_cell > 0:
             let blk = get_toc().block_index(cur_cell)
             if blk >= 0:
-                draw_image(blk, gl_mouse_pos(0)/scale - cell_pxsize()/2, 10.0)
+                draw_image(blk, gl.mouse_pos(0)/scale - cell_pxsize()/2, 10.0)
 
     def on_deactivate(removed: bool):
         if removed:
@@ -172,10 +172,10 @@ class editor_mode: game_mode
             push(stamp_ixs, get_toc().assign_block(++i))
 
     private def maybe_pick_block():
-        let p = gl_mouse_pos(0)
+        let p = gl.mouse_pos(0)
         for(select_bbs) bb:
             if bb.key.contains(p):
-                if gl_button("left shift") > 0:
+                if gl.button("left shift") > 0:
                     mk_stamp_from_split4(bb.value)
                 else:
                     cur_cell = get_toc().assign_block(bb.value)
@@ -185,7 +185,7 @@ class editor_mode: game_mode
                 return
 
     private def change_lm_val(amt):
-        let cc = screen_to_cell(gl_mouse_pos(0))
+        let cc = screen_to_cell(gl.mouse_pos(0))
         if block_selection.is_degenerate() or not block_selection.contains(cc):
             lev.lightmap.adj_byte(cc, amt)
         else:
@@ -194,19 +194,19 @@ class editor_mode: game_mode
 
 
     def update(d_t: float) -> input_result:
-        let mp = gl_mouse_pos(0)
-        let m1 = gl_button("mouse1")
-        let m3 = gl_button("mouse3")
+        let mp = gl.mouse_pos(0)
+        let m1 = gl.button("mouse1")
+        let m3 = gl.button("mouse3")
 
         bindings_begin_frame()
         if m1 == 1:
             if selecting_block:
                 maybe_pick_block()
             else:
-                if gl_button("left ctrl") > 0:
+                if gl.button("left ctrl") > 0:
                     cur_cell = cur_layer().toc_ix_at(screen_to_cell(mp))
                 else:
-                    let act_cell = if gl_button("left shift") > 0: 0 else: cur_cell 
+                    let act_cell = if gl.button("left shift") > 0: 0 else: cur_cell 
                     if act_cell >= 0:
                         let cc = screen_to_cell(mp)
                         if length(stamp_ixs) > 0:
@@ -230,12 +230,12 @@ class editor_mode: game_mode
 
         if mode == em_change_walls:
             when_binding(key_went_down, kb_increase_light):
-                let amt = if gl_button("left shift") > 0: 50 else: 10
+                let amt = if gl.button("left shift") > 0: 50 else: 10
                 change_lm_val(amt)
                 lev.masks_invalidated = true
 
             when_binding(key_went_down, kb_decrease_light):
-                let amt = -if gl_button("left shift") > 0: 50 else: 10
+                let amt = -if gl.button("left shift") > 0: 50 else: 10
                 change_lm_val(amt)
                 lev.masks_invalidated = true
 
@@ -317,17 +317,17 @@ class editor_mode: game_mode
         return ir_ok
 
     private def render_select():
-        let w_sz = gl_window_size()
-        gl_clear(color_black)
-        gl_blend(blend_alpha)
+        let w_sz = gl.window_size()
+        gl.clear(color_black)
+        gl.blend(blend_alpha)
         set_ui_editor_font(true)
-        gl_text("Pick Block")
+        gl.text("Pick Block")
 
         draw_ortho(w_sz/scale)
-        gl_set_shader("textured_color")
-        gl_blend(blend_none)
+        gl.set_shader("textured_color")
+        gl.blend(blend_none)
 
-        var y = gl_text_size("W").y + 10
+        var y = gl.text_size("W").y + 10
         var x = cell_pick_margins
 
         let cur_pxsize = cell_pxsize()
@@ -346,13 +346,13 @@ class editor_mode: game_mode
         draw_finish()
 
     def render_ui_window():
-        gl_set_shader("color")
-        gl_ortho()
-        gl_blend(blend_alpha)
+        gl.set_shader("color")
+        gl.ortho()
+        gl.blend(blend_alpha)
 
-        im_frame():
-            im_window("Properties", 0):
-                lev.lightmap.default_value = im_sliderint("ambient light", 
+        im.frame():
+            im.window("Properties", 0):
+                lev.lightmap.default_value = im.sliderint("ambient light", 
                                                            lev.lightmap.default_value,
                                                            0, 255)
 
@@ -360,26 +360,26 @@ class editor_mode: game_mode
         if selecting_block:
             render_select()
         else:
-            gl_clear(color_red)    
+            gl.clear(color_red)    
             let view = screen_view_bounds(top_left, scale)
-            draw_ortho(gl_window_size()/scale)
-            gl_set_shader("textured_color")
-            gl_translate(-float(top_left*lev.floor.pxsize)):
+            draw_ortho(gl.window_size()/scale)
+            gl.set_shader("textured_color")
+            gl.translate(-float(top_left*lev.floor.pxsize)):
                 lev.render(view)
-                gl_blend(blend_alpha)
+                gl.blend(blend_alpha)
 
             draw_begin()
-            gl_set_shader("textured_color")
+            gl.set_shader("textured_color")
             render_cur_stamp()
             draw_finish()
 
-            gl_set_shader("color")
-            gl_ortho()
-            gl_blend(blend_alpha)
+            gl.set_shader("color")
+            gl.ortho()
+            gl.blend(blend_alpha)
             highlight_cell_under_cursor()
 
             if not block_selection.is_degenerate():
-                gl_color(color_white):
+                gl.color(color_white):
                     let pbb = aabb2i{cell_tl_to_screen(block_selection.mins),
                                      cell_tl_to_screen(block_selection.maxs+1)}
                     draw_bb_outline(pbb, 1.0)
@@ -389,8 +389,8 @@ class editor_mode: game_mode
             var bn = ""
             if cur_cell > 0:
                 bn = blk_img_name[get_toc().block_index(cur_cell)]
-            gl_translate(float2_1*10.0):
-                gl_text("{mode}     {bn}") 
+            gl.translate(float2_1*10.0):
+                gl.text("{mode}     {bn}") 
     
             
             render_ui_window()

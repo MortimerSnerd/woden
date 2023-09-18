@@ -96,4 +96,12 @@ def register_action(a: action_desc):
         fatal("Duplicate action name for {a}")
     push(action_reg, a)
 
+// Returns the action with the given name, or nil if none found.
+def find_action(n: string) -> action_desc?:
+    let i = find(action_reg): _.name == n
+    if i >= 0:
+        return action_reg[i]
+    else:
+        return nil
+
 //TODO code for querying possible actions for an object goes here?

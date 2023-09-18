@@ -14,11 +14,11 @@ enum key_tests:
 
 let key_test_desc = ["up", "down", "pressed", "released"]
 
-// Description of a key combination. In addition to keys recognized by gl_button,
+// Description of a key combination. In addition to keys recognized by gl.button,
 // also recognizes "mouse wheel up" and "mouse wheel down"
 class key_desc:
    mods: int    // modifiers, like mod_control, etc.
-   key: string  // Key recognized by gl_button().  
+   key: string  // Key recognized by gl.button().  
 
    def to_string():
       var rv = ""
@@ -37,13 +37,13 @@ class key_desc:
    def operator<(other: key_desc) -> bool:
       return mods < other.mods or (mods == other.mods and key < other.key)
 
-   // Compares key test and the output of gl_button, returning true 
+   // Compares key test and the output of gl.button, returning true 
    // if the test should pass.
    def key_test_passes(test: key_tests):
       if key == "mouse wheel up" or key == "mouse wheel down":
-         return gl_mousewheel_delta() != 0
+         return gl.mousewheel_delta() != 0
       else:
-         let downv, upv = gl_button(key)
+         let downv, upv = gl.button(key)
          switch test:
             case key_is_up:
                return upv >= 1
@@ -59,9 +59,9 @@ class key_desc:
    // Returns true if the mod state matches the spec in mods.
    private def mods_match(mod_flag, but1, but2) -> bool:
       if mods.has_any(mod_flag):
-         return gl_button(but1) != 0 or gl_button(but2) != 0
+         return gl.button(but1) != 0 or gl.button(but2) != 0
       else:
-         return gl_button(but1) == 0 and gl_button(but2) == 0
+         return gl.button(but1) == 0 and gl.button(but2) == 0
 
    // Returns an activation count >= 1  if the particular key test passes.
    def test(kt: key_tests) -> int:
@@ -74,9 +74,9 @@ class key_desc:
             return 0
          else:
             if key == "mouse wheel up":
-               return max(0, gl_mousewheel_delta())
+               return max(0, gl.mousewheel_delta())
             elif key == "mouse wheel down":
-               return abs(min(0, gl_mousewheel_delta()))
+               return abs(min(0, gl.mousewheel_delta()))
             else:
                return 1
       else:

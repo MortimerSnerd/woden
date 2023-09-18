@@ -70,15 +70,15 @@ struct tx_handle:
       return h < other.h
 
    def dimensions() -> int2:
-      return gl_texture_size(tx_res[h])
+      return gl.texture_size(tx_res[h])
 
 let INVALID_TX_HANDLE = tx_handle{-1}
 let INVALID_TX_IMAGE = "dist/images/Bubba.png"
 var INVALID_TX = nil :: resource<texture>
 
-// Call once on startup to initialize, after gl_window() has been called.
+// Call once on startup to initialize, after gl.window() has been called.
 def init_textures():
-   INVALID_TX = gl_load_texture(INVALID_TX_IMAGE)
+   INVALID_TX = gl.load_texture(INVALID_TX_IMAGE)
 
 // Loads a texture if necessary, returning an index into tx_res.
 def load_tx(path: string) -> tx_handle:
@@ -88,7 +88,7 @@ def load_tx(path: string) -> tx_handle:
    if i < 0:
       let true_path, txopts = parse_path(path)
       i = length(tx_path)
-      var tx = gl_load_texture(true_path, txopts)  //TODO any texture flags specific to load time?
+      var tx = gl.load_texture(true_path, txopts)  //TODO any texture flags specific to load time?
       if tx == nil:
          tx = INVALID_TX
          error(): "Could not load texture {path}"

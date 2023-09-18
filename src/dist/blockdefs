@@ -8,3 +8,4 @@ BLK "dev/pc.png" alpha
 BLK "dev/lantern.png" alpha
 BLK "dev/door1hc.png" alpha,solid
 BLK "dev/door1ho.png" alpha
+BLK "dev/goober.png" alpha

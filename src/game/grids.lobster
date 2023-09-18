@@ -61,7 +61,7 @@ private def get_stipple_texture() -> resource<texture>:
                     push(rowarr, colors[ci])
                 else:
                     push(rowarr, colors[1-ci])
-        stipple_texture = gl_create_texture(m, blocks_tx_format)
+        stipple_texture = gl.create_texture(m, blocks_tx_format)
 
     guard stipple_texture:
         fatal("could not create stipple texture, I croak")
@@ -218,12 +218,12 @@ class grid_chunk:
                     if bix >= 0:
                         draw_image(bix, bounds.mins*pxsize + cc*pxsize, layer)
             meshes = map(draw_finish_meshes()): 
-                gl_set_mesh_texture(_.value, 0, 0, _.key)
+                gl.set_mesh_texture(_.value, 0, 0, _.key)
                 _.value
             PERF.stop()
 
         for(meshes) m:
-            gl_render_mesh(m)
+            gl.render_mesh(m)
         PERF.stop()
 
 // Creates a grid_chunk with the given size, using the given grid_toc.
@@ -531,23 +531,23 @@ class grid_level:
             masks_invalidated = false
 
         if mask_viz:
-            gl_set_shader("color")
-            gl_blend(blend_none)
-            gl_color(color{0.0, 0.0, 0.0, 0.0})
-            gl_render_mesh(mask_viz)
+            gl.set_shader("color")
+            gl.blend(blend_none)
+            gl.color(color{0.0, 0.0, 0.0, 0.0})
+            gl.render_mesh(mask_viz)
 
         if mask_seen:
-            gl_set_shader("textured")
-            gl_color(color_white)
-            gl_blend(blend_alpha)
-            gl_set_primitive_texture(0, get_stipple_texture())
-            gl_render_mesh(mask_seen)
+            gl.set_shader("textured")
+            gl.color(color_white)
+            gl.blend(blend_alpha)
+            gl.set_primitive_texture(0, get_stipple_texture())
+            gl.render_mesh(mask_seen)
 
         if mask_light:
-            gl_set_shader("color_attr")
-            gl_blend(if debug_lightmap: blend_none else: blend_multiply)
-            gl_color(color_white)
-            gl_render_mesh(mask_light)
+            gl.set_shader("color_attr")
+            gl.blend(if debug_lightmap: blend_none else: blend_multiply)
+            gl.color(color_white)
+            gl.render_mesh(mask_light)
 
     // before change fullscreen
     // notseen mesh size 2236608
@@ -574,10 +574,10 @@ class grid_level:
     // This might change the render state and shader.
     def render(view: aabb2i):
         PERF.start("level render")
-        gl_color(color_white)
+        gl.color(color_white)
         PERF.time("floor render"):
-            gl_blend(blend_none)
-            gl_set_shader("textured_color")
+            gl.blend(blend_none)
+            gl.set_shader("textured_color")
             floor.render(view)
         PERF.time("wall render"):
             wall.render(aabb2i{view.mins*layer_size_factor, view.maxs*layer_size_factor})
@@ -589,16 +589,16 @@ class grid_level:
         // TODO: won't this look odd at chunk boundaries if the chunks are drawn
         //       in the wrong order?
         PERF.start("shadow render")
-        gl_set_shader("color")
-        gl_blend(blend_multiply)
-        gl_color(color{0.5, 0.5, 0.5, 0.5}):
-            gl_translate(float3{8.0,8.0,-0.5}):
+        gl.set_shader("color")
+        gl.blend(blend_multiply)
+        gl.color(color{0.5, 0.5, 0.5, 0.5}):
+            gl.translate(float3{8.0,8.0,-0.5}):
                 wall.render(aabb2i{view.mins*layer_size_factor, view.maxs*layer_size_factor})
         PERF.stop()
 
         PERF.start("render dynamics")
-        gl_blend(blend_alpha)
-        gl_set_shader("textured_color_acut")
+        gl.blend(blend_alpha)
+        gl.set_shader("textured_color_acut")
         //TODO don't draw dynamic if floor tile is entirely out of player viz
         draw_begin()
         for(objects) o:
@@ -608,8 +608,8 @@ class grid_level:
         PERF.stop()
 
         PERF.time("mask unseen"):
-            gl_blend(blend_none)
-            gl_set_shader("textured_color")
+            gl.blend(blend_none)
+            gl.set_shader("textured_color")
             mask_unseen_areas(view)
         PERF.stop()
     

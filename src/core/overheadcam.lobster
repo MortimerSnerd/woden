@@ -7,6 +7,6 @@ class OverheadCam:
    d_angle: float = 0.0   // Difference from looking straight down.
 
    def setup_view():
-      gl_rotate_y(sincos(d_angle))   // Look down.
-      gl_rotate_x(sincos(d_angle))   // Look down.
-      gl_translate(-pos)
+      gl.rotate_y(sincos(d_angle))   // Look down.
+      gl.rotate_x(sincos(d_angle))   // Look down.
+      gl.translate(-pos)

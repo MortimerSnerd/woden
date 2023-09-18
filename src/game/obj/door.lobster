@@ -40,9 +40,10 @@ class mixin_door: object_mixin
     def interact(parent: object_instance, who: object_instance, what: string) -> bool, float, string:
         guard supports_interaction(parent, who, what):
             return false, 0.0, "can not be {what}ed"
+        //TODO check to make sure nothing that blocks the door is in the way for close
         open = what == "open"
         update_opaque_mask(parent)
-        return true, 0.0, ""
+        return true, 0.2, ""
 
     def collect_supported_interactions(parent: object_instance, who: object_instance, 
                                        acts: [string]):

@@ -18,11 +18,11 @@ class camera:
    // Performs the camera transform.
    def FPS_view():
       // Rotates the view for fwd -y, up -z. 
-      gl_rotate_x(sincos(90.0))
+      gl.rotate_x(sincos(90.0))
 
-      gl_rotate_x(sincos(-pitch))
-      gl_rotate_z(sincos(-yaw))
-      gl_translate(-position)
+      gl.rotate_x(sincos(-pitch))
+      gl.rotate_z(sincos(-yaw))
+      gl.translate(-position)
 
    //TODO - this view vector from camera is based on wrong coordinate system
    //       so worldobj and this code need to be fixed at the same time.

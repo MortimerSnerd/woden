@@ -45,17 +45,17 @@ class direction_prompt<P>: player_prompt<P>
 
     def render():
         set_prompt_font()
-        let dims = gl_text_size(prompt)
+        let dims = gl.text_size(prompt)
         let margin = max(2, dims.y/4)
-        let wsz = float(gl_window_size())
-        gl_ortho()
-        gl_set_shader("color")
-        gl_blend(blend_alpha)
-        gl_color(prompt_bg)
-        gl_rect(float2{wsz.x, dims.y+margin})
-        gl_color(prompt_fg)
-        gl_translate(float2_1 * float(margin)):
-            gl_text(prompt)
+        let wsz = float(gl.window_size())
+        gl.ortho()
+        gl.set_shader("color")
+        gl.blend(blend_alpha)
+        gl.color(prompt_bg)
+        gl.rect(float2{wsz.x, dims.y+margin})
+        gl.color(prompt_fg)
+        gl.translate(float2_1 * float(margin)):
+            gl.text(prompt)
 
 // Creates a direction prompt.  We're not checking to see if
 // the given choices are actually directions.

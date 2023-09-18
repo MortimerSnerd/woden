@@ -380,7 +380,7 @@ def init_objects() -> string?:
     })
     push(object_types, object_type{
         name: "player", 
-        flags: 0, 
+        flags: of_blocks_move, 
         images: [named_image(slot_default, "dev/pc.png", 0)],
         mixins: []
     })
@@ -395,6 +395,13 @@ def init_objects() -> string?:
                 pnames: ["radius", "l0", "lr"],
                 pvals: ["16", "50", "10"]}
         ]
+    })
+
+    push(object_types, object_type{
+        name: "goober",
+        flags: of_blocks_move, 
+        images: [named_image(slot_default, "dev/goober.png", 0)],
+        mixins: []
     })
 
     return nil

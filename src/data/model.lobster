@@ -66,7 +66,7 @@ class model_data:
         // Initial geometry and mesh
         let m0ind = array_copy_sub(model.triangles, model.meshes[0].first_triangle*3,
                                    model.meshes[0].num_triangles*3)
-        let m0 = gl_new_mesh_ext("PNTCWI", model.vertices.pos, 
+        let m0 = gl.new_mesh_ext("PNTCWI", model.vertices.pos, 
                                  model.vertices.color, model.vertices.norm,
                                  model.vertices.texcoord, [],
                                  model.vertices.blend_indexes, 
@@ -78,11 +78,11 @@ class model_data:
             let mesh = model.meshes[mi+1]
             let ind = array_copy_sub(model.triangles, model.meshes[mi+1].first_triangle*3,
                                      model.meshes[mi+1].num_triangles*3)
-            gl_new_mesh_part(m0, model.string_for_offset(mesh.name), ind)
+            gl.new_mesh_part(m0, model.string_for_offset(mesh.name), ind)
 
         textures = get_mesh_textures(model)
         for(length(model.meshes)) i:
-            gl_set_mesh_texture(m0, i, 0, textures[i])
+            gl.set_mesh_texture(m0, i, 0, textures[i])
 
     
 // Per-instance model animation state.
@@ -210,15 +210,15 @@ class collider_attachment:
             let p0 = bone_trans.pre_mult(xyzw(start, 1.0))
             let p1 = bone_trans.pre_mult(xyzw(start+extent, 1.0))
             let t_extent = p1 - p0
-            gl_translate(p1):
+            gl.translate(p1):
                 if (t_extent.x != 0.0 or t_extent.y != 0.0):
                     let qr = mk_quat_from_vectors(t_extent, float3_z)
                     let axis, ang = qr.decompose()
-                    gl_rotate(axis, sincos(ang)):
-                        gl_render_mesh(mesh)
+                    gl.rotate(axis, sincos(ang)):
+                        gl.render_mesh(mesh)
                 else:
-                    gl_render_mesh(mesh)
-            //gl_line(p0, p1, 0.1)
+                    gl.render_mesh(mesh)
+            //gl.line(p0, p1, 0.1)
 
 // Looks for collider extensions in the iqm_file, and if found, loads and
 // returns them.
@@ -272,17 +272,17 @@ private def get_mesh_textures(model: iqm_file) -> [resource<texture>]:
         //     list of names to try.
         if m.material != 0:
             let p_m = pathed(model.string_for_offset(m.material))
-            let m_t = gl_load_texture(p_m)
+            let m_t = gl.load_texture(p_m)
             if m_t:
                 return m_t
         if m.name != 0:
             let p_n = pathed(model.string_for_offset(m.name))
-            let n_t = gl_load_texture(p_n)
+            let n_t = gl.load_texture(p_n)
             if n_t:
                 return n_t
 
         let backup = pathed("NONESUCH")
-        let b_t = gl_load_texture(backup)
+        let b_t = gl.load_texture(backup)
         if b_t:
             return b_t
 

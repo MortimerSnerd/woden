@@ -87,7 +87,7 @@ class bvh_file:
             //let jm = m * joint_transform(jix, floor(frame))
             let jp = xyz(jm * float4_w)
             let np = xyz(jm * vec4(joints[jix].endpoint_offset(joints), 1.0))
-            gl_line(jp, np, thickness)
+            gl.line(jp, np, thickness)
             for(joints[jix].children) chix:
                 draw_hier(chix, jm)
 
